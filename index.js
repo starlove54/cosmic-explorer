@@ -150,29 +150,42 @@ function windowResized() {
 }
 
 // Touch-related variables
-let initialTouchX = 0
-let initialTouchY = 0
-let initialScaleFactor = 1.0
+let touchesStart = []
+let touchesMoved = []
+let cumulativeScaleFactor = 1.0
 
 // Touch start event
 function touchStarted() {
-  initialTouchX = mouseX
-  initialTouchY = mouseY
-  initialScaleFactor = scaleFactor
+  touchesStart = touches.map((touch) => ({ x: touch.x, y: touch.y }))
+  touchesMoved = [...touchesStart]
   return false // Prevent default
 }
 
 // Touch move event for pinch-to-zoom
 function touchMoved() {
   if (touches.length === 2) {
-    // Calculate the distance between the two touches
-    let d = dist(touches[0].x, touches[0].y, touches[1].x, touches[1].y)
+    // Calculate the initial and current distance between the two touches
+    const dStart = dist(
+      touchesStart[0].x,
+      touchesStart[0].y,
+      touchesStart[1].x,
+      touchesStart[1].y
+    )
+    const dMoved = dist(
+      touchesMoved[0].x,
+      touchesMoved[0].y,
+      touchesMoved[1].x,
+      touchesMoved[1].y
+    )
 
-    // Map the distance to a scale factor
-    scaleFactor = map(d, 0, width, 0.5, 2.0)
+    // Calculate the scale factor based on the ratio of initial and current distances
+    const scaleFactorDelta = dMoved / dStart
+
+    // Update the cumulative scale factor
+    cumulativeScaleFactor *= scaleFactorDelta
 
     // Ensure the scale factor stays within a reasonable range
-    scaleFactor = constrain(scaleFactor, 0.5, 2.0)
+    cumulativeScaleFactor = constrain(cumulativeScaleFactor, 0.5, 2.0)
 
     // Set the scrolling flag to true
     isScrolling = true
@@ -181,6 +194,9 @@ function touchMoved() {
     setTimeout(() => {
       isScrolling = false
     }, 100)
+
+    // Update the initial touch positions for the next iteration
+    touchesMoved = touches.map((touch) => ({ x: touch.x, y: touch.y }))
 
     return false // Prevent default
   }

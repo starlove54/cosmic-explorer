@@ -10,7 +10,7 @@ canvas {
 #message-box {
   position: absolute;
   right: 5rem;
-  top: 2rem;
+  top: 5rem;
   background-color: rgba(255, 255, 255, 0.8);
   padding: 10px;
   border-radius: 10px;
